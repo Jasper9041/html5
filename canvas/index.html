@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body">
+    <canvas id="canvas" class="canvas" width="100%" height="400"></canvas>
+    <div id="slideshow" class="swiper">
+        <p>Some Text to test swiping over</p>
+    </div>
+    <textarea id="log" class="image_data"></textarea>
+    <script src="js/utils.js"></script>
+    <script>
+    window.onload = function () {
+        var canvas = document.getElementById("canvas"),
+            context = canvas.getContext('2d'),
+            slideshow = document.getElementById("slideshow"),
+            body = document.getElementById("body"),
+            canvas_evt = utils.captureTouch(canvas),
+            log = document.getElementById("log"),
+            ss_evt = utils.captureTouch(slideshow);
+        
+        /*
+        utils.addCustomEventListener(canvas, "swipe", function (e) {
+            console.log("swipped canvas: " + e.detail.direction);
+        }, false);
+        
+        utils.addCustomEventListener(slideshow, "swipe", function (e) {
+            console.log("swipped slideshow: " + e.detail.direction);
+        }, false);
+        */
+        slideshow.addEventListener("swipe", function (e) {
+            log.value = "swipped on div region: " + e.detail.direction;
+        }, false);
+
+        canvas.addEventListener("tap", function (e) {
+            //console.log("tapped on canvas: (x:" + e.detail.x + ", y:" + e.detail.y + ")");
+            log.value = "tapped on canvas on (x:" + e.detail.x + ", y:" + e.detail.y + ")";
+            //drawFrame();
+        }, false);
+
+        canvas.addEventListener("slide", function (e) {
+            log.value = "slidding on canvas (delta.x: " + e.detail.delta.x + ", delta.y: " + e.detail.delta.y + ", movement.x: " + e.detail.movement.x + ", movement.y: " + e.detail.movement.y;
+        }, false);
+
+        canvas.addEventListener("swipe", function (e) {
+            //console.log("swipped on canvas: " + e.detail.direction);
+            log.value = "swipped on canvas: " + e.detail.direction;
+        }, false);
+
+        slideshow.addEventListener("tap", function (e) {
+            //console.log("tapped on slideshow: (x:" + e.detail.x + ", y:" + e.detail.y + ")");
+            log.value = "tapped on div region on (x:" + e.detail.x + ", y:" + e.detail.y + ")";
+        }, false);
+
+    };
+</script>
+</body>
+</html>

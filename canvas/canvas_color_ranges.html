@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body">
+    <canvas id="canvas" width="640" height="360"></canvas>
+    <!--<video id="movieclip" class="hide" width="640" height="360" autoplay>
+        <source src="assets/video/trailer_test.mp4" type="video/mp4"/>
+        <p>This browser doesn't support the <code>video</code> element.</p>
+    </video>-->
+    <img src="" width="640" height="360" id="bgimg" class="hide"/>
+    <ul id="actions" class="list">
+        <li><button data-action="save_snapshot">Take Snapshot</button></li>
+        <li><button data-action="store_datauri">Save DataURI</button></li>
+        <li><button data-action="load-datauri">Load DataURI</button></li>
+    </ul>
+    <div class="filters">
+        <select id="filters">
+            <option name="normal">normal</option>
+            <option name="grayscale-lightness">grayscale-lightness</option>
+            <option name="grayscale-average">grayscale-average</option>
+            <option name="grayscale-luminosity">grayscale-luminosity</option>
+            <option name="sepia">sepia</option>
+            <option name="inverse">inverse</option>
+            <option name="xray">xray</option>
+        </select>
+    </div>
+    <textarea id="log" class="image_data"></textarea>
+    <script src="js/utils.js"></script>
+    <script src="js/utils_video.js"></script>
+    <script src="js/assets.js"></script>
+    <script>
+    
+    window.onload = function () {
+        var canvas = document.getElementById("canvas"),
+            context = canvas.getContext('2d'),
+            mouse = utils.captureMouse(canvas),
+            log = document.getElementById("log"),
+            video = document.getElementById("movieclip"),
+            datauri = '',
+            running = true,
+            loaded = false,
+            img = document.getElementById("bgimg"),
+            actions = document.getElementById("actions"),
+            filters = document.getElementById("filters"),
+            params = {
+                mode: "normal",
+                filter: "none"
+            },
+            self = this;
+
+        actions.addEventListener("click", handleClick, false);
+        filters.addEventListener("change", handleFilters, false);
+
+        function handleFilters(e) {
+            var target = e.target,
+                frame;
+
+            switch (target.value) {
+                
+                case "grayscale-lightness":
+                case "grayscale-average":
+                case "grayscale-luminosity":
+                    params.mode = "grayscale";
+                    params.filter = target.value.replace('grayscale-','');
+                    break;
+
+                case "sepia":
+                    params.mode = "sepia";
+                    params.filter = "sepia";
+                    break;
+
+                case "inverse":
+                    params.mode = "inverse";
+                    params.filter = "inverse";
+                    break;
+
+                case "xray":
+                    params.mode = "xray";
+                    params.filter = "xray";
+                    break;
+
+                case "normal":
+                    context.drawImage(img,0,0);
+                    return;
+                    break;
+            }
+            context.drawImage(img,0,0);
+            frame = context.getImageData(0,0,canvas.width,canvas.height);
+            writeFrame(frame);
+
+        };
+
+        function handleClick(e) {
+            console.log(e);
+            var target,
+                action;
+
+            target = e.target;
+            action = target.getAttribute("data-action");
+
+            if (!action) { return; }
+            switch(action) {
+                case "switch_filter":
+                    switch_filter(e);
+                    break;
+
+                case "store_datauri":
+                    datauri = canvas.toDataURL();
+                    log.value = datauri;
+                    assets.snapshot = datauri;
+                    break;
+
+                case "save_snapshot":
+                    saveSnapshot();
+                    break;
+
+                case "load-datauri":
+                    if (!loaded) {
+                        img.src = assets.snapshot;
+                        img.onload = function () {
+                            self.loaded = true;
+                            context.drawImage(img,0,0);
+                        };
+                    } else {
+                        context.drawImage(img,0,0);
+                    }
+                    break;
+
+                case "toggle_video":
+                    if (video.paused) {
+                        video.play();
+                        running = true;
+                        drawFrame();
+                        e.target.innerText = "Pause";
+                    } else {
+                        video.pause();
+                        running = false;
+                        e.target.innerText = "Play";
+                    }
+                    break;
+
+                case "remove_filter":
+                    params.mode = 'normal';
+                    params.filter = 'none';
+                    break;
+            }
+        };
+
+        function saveSnapshot() {
+            context.drawImage(video, 0, 0);
+            saved_original_frame = context.getImageData(0, 0, canvas.width, canvas.height);
+        };
+
+        function writeFrame(frame, width, height) {
+            var resample,
+                width = width || canvas.width,
+                height = height || canvas.height,
+                mode = params.mode,
+                filter = params.filter;
+            
+            resample = utils.video.apply_filter(frame,mode,filter,params);
+            context.putImageData(resample,0,0);
+        };
+
+
+    };
+</script>
+</body>
+</html>

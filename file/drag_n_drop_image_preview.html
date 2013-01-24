@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Drop Target File</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/file.js"></script>
+</head>
+<body id="body">
+    <div class="format form white">
+	   <h1>File Preview</h1>
+	   <div id="status">Drag the files from a folder to selected area</div>
+	   <div id="drop">Drop Files here.</div>
+       <div id="images"></div>
+       <div id="list"></div>
+    </div>
+    <script>
+        var drop = dei("drop"),
+            images = dei("images"),
+            list = dei("list"),
+            status = dei("status"),
+            fsys;
+
+        function dei(id) {return document.getElementById(id);}
+        
+        function cancel(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        };
+
+        function displayImage(handle) {
+            var regexp = /image.*/;
+            // read file handle, if it is an image, then we should make an image and put it in the images div
+            fsys.readFile(handle, 'readAsDataURL', regexp, function (image) {
+                var img = new Image();
+                img.src = image;
+                images.insertBefore(img);
+            });
+        };
+
+        function handleFiles(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            var flist = fsys.listFiles(e);
+            fsys.getFiles(flist, function (file) {
+                displayImage(file);
+            });
+        };
+
+        function init() {
+            fsys = new FileSystem();
+            drop.addEventListener("dragover", cancel, false);
+            drop.addEventListener("drop", handleFiles, false);
+        }
+
+        window.onload = function () {init();}
+    </script>
+</body>
+</html>

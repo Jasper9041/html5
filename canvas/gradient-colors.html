@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body">
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <script src="js/utils.js"></script>
+    <script>
+    window.onload = function () {
+        var canvas = document.getElementById("canvas"),
+            context = canvas.getContext('2d'),
+            mouse = utils.captureMouse(canvas),
+            pt1 = {
+                x: 0,
+                y: 0
+            },
+            pt2 = {
+                x: canvas.width,
+                y: canvas.height / 2
+            },
+            gradient = context.createLinearGradient(pt1.x, pt1.y, pt2.x, pt2.y);
+
+        // gradient from white to red
+        gradient.addColorStop(0, "#f9f9f9");
+        gradient.addColorStop(1, "#2b2b2b");
+
+        context.fillStyle = gradient;
+        context.fillRect(0,0,canvas.width,canvas.height);
+
+        (function drawFrame() {
+            window.requestAnimationFrame(drawFrame, canvas);
+            context.clearRect(0,0,canvas.width, canvas.height);
+
+            pt2.x = mouse.x;
+            pt2.y = mouse.y;
+
+            gradient = context.createLinearGradient(pt1.x, pt1.y, pt2.x, pt2.y);
+
+            // gradient from white to red
+            gradient.addColorStop(0, "#f9f9f9");
+            gradient.addColorStop(1, "#2b2b2b");
+
+            context.fillStyle = gradient;
+            context.fillRect(0,0,canvas.width, canvas.height);
+        }());
+    };
+</script>
+</body>
+</html>

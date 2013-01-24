@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body">
+    <canvas id="canvas" width="640" height="360"></canvas>
+    <video id="movieclip" class="hide" width="640" height="360" autoplay>
+        <source src="assets/video/trailer_test.mp4" type="video/mp4"/>
+        <p>This browser doesn't support the <code>video</code> element.</p>
+    </video>
+    <div id="color-sample" class="color-output hide"></div>
+    <textarea id="color_data" class="image_data hide"></textarea>
+    <div id="filters">
+        <ul class="list buttons">
+            <li><button id="worker-frame" data-action="render_worker_frame">Render Manual Worker Frame</button>
+            <li><button id="toggle-worker" data-action="toggle_worker">Worker Off</button></li>
+            <li><button id="toggle-video" data-action="video_toggle">Pause</button></li>
+            <li><button id="save" data-action="save_snapshot">Take Snapshot</button></li>
+            <li><button id="lightness" data-filter="lightness" data-mode="grayscale" data-action="switch_filter">Lightness Filter</button></li>
+            <li><button id="average" data-filter="average" data-mode="grayscale" data-action="switch_filter">Average Filter</button></li>
+            <li><button id="luminosity" data-filter="luminosity" data-mode="grayscale" data-action="switch_filter">Luminosity Filter</button></li>
+            <li><button id="inverse" data-filter="inverse" data-mode="inverse" data-action="switch_filter">Inverse Filter</button></li>
+            <li><button id="sepia" data-filter="sepia" data-mode="sepia" data-action="switch_filter">Sepia Filter</button></li>
+            <li><button id="remove-filters" data-action="remove_filter">Remove Filters</button></li>
+        </ul>
+    </div>
+    <script src="js/utils.js"></script>
+    <script src="js/utils_video.js"></script>
+    <script>
+    var config = {
+        use_webworker: false,
+        mode: 'normal',
+        filter: 'average',
+        video: {
+            available_frame: null,
+            saved_frame: null,
+            player: null
+        }
+    };
+    window.onload = function () {
+        var canvas = document.getElementById("canvas"),
+            context = canvas.getContext('2d'),
+            mouse = utils.captureMouse(canvas),
+            video = document.getElementById("movieclip"),
+            max_frames = 400,
+            start = 0,
+            filters = [document.getElementById("lightness"),document.getElementById("average"),document.getElementById("luminosity"),document.getElementById("inverse")],
+            sample_bounds = {
+                w: 60,
+                h: 60
+            },
+            saved_frame = null,
+            saved_original_frame = null,
+            running = true,
+            available_frame = null,
+            pixels, region,
+            toggle_worker = document.getElementById("toggle-worker"),
+            filters_btn = document.getElementById('remove-filters'),
+            kickstart = document.getElementById("worker-frame"),
+            buttons = document.getElementsByClassName("buttons")[0],
+            self = this;
+
+        utils.params = {
+            offsetRed: 0.769,//0.769,
+            offsetGreen: 0.323,//0.323,
+            negativeBlue: 30
+        };
+
+        config.video.player = video;
+
+        buttons.addEventListener("click", handleClick, false);
+
+        function handleClick(e) {
+            var target,
+                action;
+
+            target = e.target;
+            action = target.getAttribute("data-action");
+
+            if (!action) { return; }
+            switch(action) {
+                case "render_worker_frame":
+                    reRenderCurrentFrame();
+                    break;
+
+                case "switch_filter":
+                    switch_filter(e);
+                    break;
+
+                case "save_snapshot":
+                    saveSnapshot();
+                    break;
+
+                case "video_toggle":
+                    if (video.paused) {
+                        video.play();
+                        running = true;
+                        drawFrame();
+                        e.target.innerText = "Pause";
+                    } else {
+                        video.pause();
+                        running = false;
+                        e.target.innerText = "Play";
+                    }
+                    break;
+
+                case "toggle_worker":
+                    toggleRenderMode(e);
+                    break;
+
+                case "remove_filter":
+                    config.mode = 'normal';
+                    break;
+            }
+        };
+
+        var worker = new Worker("js/video_worker.js");
+
+        worker.onmessage = function (e) {
+            if (e.data.type) {
+                if (e.data.type === "frame") {
+                    config.video.available_frame = e.data.frame;
+                    saved_frame = e.data.frame;
+                    if (!running) {
+                        context.putImageData(saved_frame,0,0);
+                    }
+                }
+            }
+        }
+
+        worker.onerror = function (e) {
+            console.log("Got error from Worker");
+            console.log(e);
+        }
+        
+        function switch_filter(e) {
+            var target = e.target,
+                filter = target.getAttribute('data-filter'),
+                f_mode = target.getAttribute('data-mode');
+
+            self.config.mode = f_mode;
+            self.config.filter = filter;
+        };
+
+        function toggleRenderMode(e) {
+            if (!self.config.use_webworker) {
+                self.config.use_webworker = true;
+                e.target.innerText = "Worker On";
+            } else {
+                self.config.use_webworker = false;
+                e.target.innerText = "Worker Off";
+            }
+        };
+
+        function saveSnapshot() {
+            context.drawImage(video, 0, 0);
+            saved_original_frame = context.getImageData(0, 0, canvas.width, canvas.height);
+        };
+
+        function reRenderCurrentFrame() {
+            var frame = saved_original_frame || context.getImageData(0,0,canvas.width,canvas.height),
+                mode = config.mode,
+                filter = config.filter;
+
+            worker.postMessage({
+                type: 'filter',
+                frame: frame,
+                mode: mode,
+                filter: filter,
+                params: utils.params
+            });
+
+        };
+
+        function writeFrame(frame) {
+            var resample,
+                width = width || canvas.width,
+                height = height || canvas.height,
+                mode = self.config.mode,
+                filter = self.config.filter;
+
+            if (!config.use_webworker) {
+                // non-web-worker
+                resample = utils.video.apply_filter(frame,mode,filter,utils.params);
+                context.putImageData(resample,0,0);
+            } else {
+                // workers are slower at these tasks
+                worker.postMessage({
+                    type: 'filter',
+                    frame: frame,
+                    mode: mode,
+                    filter: filter,
+                    params: utils.params
+                });
+
+                if (config.video.available_frame) {context.putImageData(available_frame,0,0);}
+            }
+        };
+        
+        function drawFrame() {
+            if (running) {
+                window.requestAnimationFrame(drawFrame,canvas);
+            }
+            context.drawImage(video, 0, 0);
+            if (config.mode === "normal") {return;}
+            var frame = context.getImageData(0, 0, canvas.width, canvas.height);
+            writeFrame(frame);
+        };
+
+        drawFrame();
+
+    };
+</script>
+</body>
+</html>

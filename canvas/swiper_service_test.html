@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body">
+    <canvas id="canvas" class="canvas" width="100%" height="400"></canvas>
+    <div id="slideshow" class="swiper">
+        <p>Some Text to test swiping over</p>
+    </div>
+    <textarea id="log" class="image_data"></textarea>
+    <script src="http://yui.yahooapis.com/3.6.0/build/yui/yui-min.js"></script>
+    <script src="js/swiper_lite.js"></script>
+    <script>
+    YUI().use("node","swiper", function (Y) {
+
+        var target = Y.one("#canvas"),
+            log = Y.one('#log'),
+
+            targetNode = Y.Node.getDOMNode(target),
+            
+            swiper = new Y.SwiperLiteService(target, {
+                config: {
+                    swipe: {
+                        acceptable_opposite_axis_movement: 300,
+                        min_swipe_distance: 10
+                    }
+                }
+            }).captureTouch();
+
+            targetNode.addEventListener("action-start", function (e) {
+                Y.log("action init on #canvas", "debug");
+                log.setContent("action init on #canvas");
+            }, false);
+
+            targetNode.addEventListener("swipe", function (e) {
+                Y.log("swipped on #canvas in the " + e.detail.direction + " direction", "debug");
+                log.setContent("swipped on #canvas in the " + e.detail.direction + " direction");
+            }, false);
+
+            targetNode.addEventListener("slide", function (e) {
+                //Y.log("slidding on #canvas (dx: " + e.detail.delta.x + ", dy: " + e.detail.delta.y + ", mx: " + e.detail.movement.x + ", my: " + e.detail.movement.y);
+            }, false);
+
+            targetNode.addEventListener("tap", function (e) {
+                Y.log("tapped on #canvas on (x: " + e.detail.x + ", y: " + e.detail.y + ")", "debug");
+            }, false);
+    });
+    </script>
+</body>
+</html>

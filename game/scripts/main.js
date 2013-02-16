@@ -1,59 +1,78 @@
 /* main.js */
-var game, c1, c2, keys, mouse;
+var Engine = {},
+    game, 
+    hero, 
+    plant, 
+    plant2, 
+    tiles;
 
-require(["helpers/utils", "engine/game", "engine/display_list", "engine/sprite"], function() {
-	game = new Game();
-	game.init(); // create canvas, get contexts
-	
-	// setup keyboard events
-	keys = utils.captureKeyboard(document);
-	mouse = utils.captureMouse(game.ui.canvas);
+require(['engine/display_list','engine/game','engine/sprite','engine/character', 'engine/tile_map'], function () {
+    
 
-	// move a character
-	function moveCharacter(key) {
-		switch (key) {
-		case "up":
-			c1.y -= 2;
-			break;
-		case "down":
-			c1.y += 2;
-			break;
-		case "left":
-			c1.x -= 2;
-			break;
-		case "right":
-			c1.x += 2;
-			break;
-		}
-	};
+    game = new Game();
+    game.init(); // create canvas, get contexts
 
-	// capture keyboard state
-	document.addEventListener("keydown", function (e) {
-		game.handleKeypress(e.keyCode, moveCharacter);
-	}, false);
+    game.addListener(document, "keydown");
+    game.addListener(document, "keyup");
 
-	// create cat girl sprite
-	c1 = new Sprite({
-		x: 0,
-		y: 0,
-		width: 101,
-		height: 171,
-		image: 'images/character_cat_girl.png'
-	});
-	
-	// create pink girl sprite
-	c2 = new Sprite({
-		x: 200,
-		y: 150,
-		width: 101,
-		height: 171,
-		image: 'images/character_pink_girl.png'
-	});
-	
-	// add to display list
-	game.displayList.add(c1);
-	game.displayList.add(c2);
+    // add some sprites to the render the background, ideally we load one image and share that resource among all copies 
+    // of a given type of background element
+    plant = new Sprite({
+        x: 0,
+        y: 0,
+        width: 16,
+        height: 16,
+        image: 'images/sprites/environment/grasses/grasses.gif'
+    });
+    plant.scaleX = 1;
+    plant.scaleY = 1;
+    plant2 = new Sprite({
+        x: 8,
+        y: 0,
+        width: 16,
+        height: 16,
+        image: 'images/sprites/environment/grasses/grasses.gif'
+    });
 
-	game.render();
+    plant2.sx = 32;
+    plant2.scaleX = 1;
+    plant2.scaleY = 1;
+
+    game.displayList.add(plant);
+    game.displayList.add(plant2);
+    game.renderBackground();
+
+    tiles = new TileMap({
+        image: 'images/sprites/environment/grasses/grasses.gif'
+    });
+    
+    tiles.preload();
+    tiles.map = [
+    {x:0, y:0, width: 16, height: 16, offsetX: 0, offsetY: 0},
+    {x:8, y:0, width: 16, height: 16, offsetX: 0, offsetY: 0},
+    {x:16, y:0, width: 16, height: 16, offsetX: 0, offsetY: 0},
+    {x:0, y:8, width: 16, height: 16, offsetX: 16, offsetY: 0},
+    {x:0, y:16, width: 16, height: 16, offsetX: 16, offsetY: 0},
+    {x:8, y:8, width: 16, height: 16, offsetX: 32, offsetY: 0}];
+
+    //hero = new Character();
+    // generate a character (link)
+    hero = new Character({
+        image: 'images/sprites/link/link_run_all.png',
+        height: 100,
+        width: 68,
+        x: 0,
+        y: 0,
+        collidesWith: game.displayList
+    });
+    hero.scaleY = 0.5;
+    hero.scaleX = 0.5;
+
+    game.addObserver(hero, "keydown", "handleKeypress");
+    game.addObserver(hero, "keyup", "handleComplete");
+    
+    // displayList is the foreground
+    game.displayList.add(hero);
+    game.render();
 
 });

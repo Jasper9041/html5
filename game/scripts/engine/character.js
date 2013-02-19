@@ -7,7 +7,7 @@
 	var Character = function (params) {
 		console.log(params.collidesWith);
 		var self = this;
-		self.speed = 4;
+		self.speed = 2;
 		self.direction = 0;
 		// character needs collisions list
 		Sprite.call(this, params);
@@ -29,17 +29,17 @@
 			padding: 4,
 			delay: 1,
 			left_offset: 0,
-			right_offset: 636,
+			right_offset: 636 / 2,
 			map: {
 				0: 0, // offset x for sprite sheet
-				1: 72,
-				2: 142,
-				3: 212,
-				4: 286,
-				5: 356,
-				6: 424,
-				7: 494,
-				8: 564
+				1: 72 / 2,
+				2: 142 / 2,
+				3: 212 / 2,
+				4: 286 / 2,
+				5: 356 / 2,
+				6: 424 / 2,
+				7: 494 / 2,
+				8: 564 / 2
 			}
 		},
 		idle: {},
@@ -83,12 +83,12 @@
 		if (this.state.keys.up) {
 			this.y -= this.speed;
 			this.state.walking.offset = this.state.walking.right_offset;
-			this.sy = 100;
+			this.sy = 100 / 2;
 		}
 		if (this.state.keys.down) {
 			this.y += this.speed;
 			this.state.walking.offset = this.state.walking.left_offset;
-			this.sy = 100;
+			this.sy = 100 / 2;
 		}
 		if (this.state.keys.right) {
 			this.x += this.speed;

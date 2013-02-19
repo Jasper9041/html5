@@ -26,11 +26,15 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
     });
     plant.scaleX = 1;
     plant.scaleY = 1;
+
     plant2 = new Sprite({
-        x: 8,
-        y: 0,
+        x: 60,
+        y: 60,
         width: 16,
         height: 16,
+        collidable: true,
+        showBounds: true,
+        boundsColor: "red",
         image: 'images/sprites/environment/grasses/grasses.gif'
     });
 
@@ -58,15 +62,18 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
     //hero = new Character();
     // generate a character (link)
     hero = new Character({
-        image: 'images/sprites/link/link_run_all.png',
-        height: 100,
-        width: 68,
+        image: 'images/sprites/link/link_run_all_sm.png',
+        height: 50,
+        width: 34,
         x: 0,
         y: 0,
+        showBounds: true,
+        boundsColor: "green",
+        collidable: true,
         collidesWith: game.displayList
     });
-    hero.scaleY = 0.5;
-    hero.scaleX = 0.5;
+    hero.scaleY = 1;
+    hero.scaleX = 1;
 
     game.addObserver(hero, "keydown", "handleKeypress");
     game.addObserver(hero, "keyup", "handleComplete");

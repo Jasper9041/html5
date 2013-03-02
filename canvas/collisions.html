@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+<title>Collisions</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body id="body">
+	<canvas id="canvas" width="400" height="400"></canvas>
+	<textarea id="log"></textarea>
+<script src="js/utils.js"></script>
+<script src="js/ball.js"></script>
+<script>
+window.onload = function () {
+	var canvas = document.getElementById("canvas"),
+		context = canvas.getContext('2d'),
+		mouse = utils.captureMouse(canvas),
+		log = document.getElementById('log'),
+		ballA = new Ball(),
+		ballB = new Ball(),
+		stop = 50,
+		cur = 0;
+
+	ballA.x = canvas.width / 2;
+	ballA.y = canvas.height / 2;
+
+	(function drawFrame() {
+		if (cur < stop) {
+			window.requestAnimationFrame(drawFrame, canvas);
+			cur += 1;
+		}
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		var boundsA = ballA.getBounds(),
+			boundsB = ballB.getBounds();
+
+		context.strokeRect(boundsA.x, boundsA.y, boundsA.width, boundsA.height);
+		context.strokeRect(boundsB.x, boundsB.y, boundsB.width, boundsB.height);
+
+		ballB.x = mouse.x;
+		ballB.y = mouse.y;
+
+		if (utils.intersects(ballA.getBounds(), ballB.getBounds())) {
+			log.value = "Hit!";
+		} else {
+			log.value = '';
+		}
+		ballA.draw(context);
+		ballB.draw(context);
+	}());
+}
+</script>
+</body>
+</html>

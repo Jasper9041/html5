@@ -17,6 +17,56 @@ var utils = {
     prevent_default_after: 5
 };
 
+utils.containsPoint = function (rect, x, y) {
+    return !(x < rect.x || x > rect.x + rect.width || 
+        y < rect.y || y > rect.y + rect.height);
+};
+
+utils.intersects = function (rectA, rectB) {
+
+    /*
+     9 point collision detection
+    */
+
+    var collides = {
+        top_left: 0,
+        top_mid: 0,
+        top_right: 0,
+        mid_left: 0,
+        mid_mid: 0,
+        mid_right: 0,
+        btm_left: 0,
+        btm_mid: 0,
+        btm_right: 0
+    },
+    aBounds = utils.getNinePointBounds(rectA),
+    bBounds = utils.getNinePointBounds(rectB);
+
+    console.log(aBounds);
+    console.log(bBounds);
+
+
+    return !(rectA.x + rectA.width < rectB.x ||
+        rectB.x + rectB.width < rectA.x ||
+        rectA.y + rectA.height < rectB.y ||
+        rectB.y + rectB.height < rectA.y);
+};
+
+utils.getNinePointBounds = function (rect) {
+    var b = {
+        tl: [rect.x, rect.y],
+        tm: [rect.x + (rect.width/2), rect.y],
+        tr: [rect.x + rect.width, rect.y],
+        ml: [rect.x, rect.y + (rect.height / 2)],
+        mm: [(rect.x + rect.width/2), rect.y + (rect.height / 2)],
+        mr: [(rect.x + rect.width), rect.y + (rect.height/2)],
+        bl: [rect.x, (rect.y + rect.height)],
+        bm: [rect.x + (rect.width/2), (rect.y + rect.height)],
+        br: [(rect.x + rect.width), (rect.y + rect.height)]
+    }
+    return b;
+};
+
 /**
  * Color Parsing
  */

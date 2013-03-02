@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+<title>Throwing</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body id="body">
+	<canvas id="canvas" width="400" height="400"></canvas>
+	<textarea id="log"></textarea>
+<script src="js/utils.js"></script>
+<script src="js/ball.js"></script>
+<script>
+window.onload = function () {
+	var canvas = document.getElementById("canvas"),
+		context = canvas.getContext('2d'),
+		mouse = utils.captureMouse(canvas),
+		log = document.getElementById('log'),
+		ball = new Ball(),
+		vx = Math.random() * 10 - 5,
+		vy = -10,
+		bounce = -0.7,
+		gravity = 0.2,
+		isMouseDown = false;
+
+	ball.x = canvas.width / 2;
+	ball.y = canvas.height / 2;
+	ball.draw(context);
+	
+	canvas.addEventListener("mousedown", function () {
+		if (utils.containsPoint(ball.getBounds(), mouse.x, mouse.y)) {
+			isMouseDown = true;
+			vx = vy = 0;
+			canvas.addEventListener('mouseup', onMouseUp, false);
+			canvas.addEventListener('mousemove', onMouseMove, false);
+		}
+	}, false);
+
+	function onMouseUp () {
+		isMouseDown = false;
+		canvas.removeEventListener('mouseup', onMouseUp, false);
+		canvas.removeEventListener('mousemove', onMouseMove, false);
+	}
+
+	function onMouseMove (event) {
+		ball.x = mouse.x;
+		ball.y = mouse.y;
+	}
+
+	function checkBoundaries () {
+		var left = 0,
+			right = canvas.width,
+			top = 0,
+			bottom = canvas.height;
+
+		vy += gravity;
+		ball.x += vx;
+		ball.y += vy;
+
+		// boundary detect and bounce
+		if (ball.x + ball.radius > right) {
+			ball.x = right - ball.radius;
+			vx *= bounce;
+		} else if (ball.x - ball.radius < left) {
+			ball.x = left + ball.radius;
+			vx *= bounce;
+		}
+
+		if (ball.y + ball.radius > bottom) {
+			ball.y = bottom - ball.radius;
+			vy *= bounce;
+		} else if (ball.y - ball.radius < top) {
+			ball.y = top + ball.radius;
+			vy *= bounce;
+		}
+	}
+
+	(function drawFrame() {
+		window.requestAnimationFrame(drawFrame, canvas);
+		context.clearRect(0,0, canvas.width, canvas.height);
+		if (!isMouseDown) {
+			checkBoundaries();
+		}
+		ball.draw(context);
+	}());
+
+	/*
+	canvas.addEventListener('mousedown', function () {
+		if (utils.containsPoint(ball.getBounds(), mouse.x, mouse.y)){
+			log.value = "in ball: mousedown";
+		} else {
+			log.value = "canvas: mousedown";
+		}
+	}, false);
+
+	canvas.addEventListener('mousemove', function () {
+		if (utils.containsPoint(ball.getBounds(), mouse.x, mouse.y)) {
+			log.value = "in ball: mousemove";
+		} else {
+			log.value = "canvas: mousemove";
+		}
+	}, false);
+
+	canvas.addEventListener("mouseup", function () {
+		if (utils.containsPoint(ball.getBounds(), mouse.x, mouse.y)) {
+			log.value = "in ball: mouseup";
+		} else {
+			log.value = "canvas: mouseup";
+		}
+	}, false);
+	*/
+}
+</script>
+</body>
+</html>

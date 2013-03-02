@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<title>Falling Boxes</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body id="body">
+	<canvas id="canvas" width="1200" height="700"></canvas>
+	<textarea id="log"></textarea>
+<script src="js/utils.js"></script>
+<script src="js/ball.js"></script>
+<script>
+window.onload = function () {
+	var canvas = document.getElementById("canvas"),
+		context = canvas.getContext('2d'),
+		boxes = [],
+		max = 2000,
+		activeBox = createBox(),
+		gravity = 0.2;
+
+	function createBox () {
+		var box = new Ball(Math.random() * 40 + 10, Math.random()*255);
+		box.x = Math.random() * canvas.width;
+		boxes.push(box);
+		return box;
+	}
+
+	function drawBox (box) {
+		if (activeBox !== box && utils.intersects(activeBox, box)) {
+			activeBox.y = box.y - (activeBox.radius + box.radius);
+			activeBox = createBox();
+		}
+		box.draw(context);
+	}
+
+	(function drawFrame() {
+		if (boxes.length < max) { window.requestAnimationFrame(drawFrame, canvas); }
+
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		activeBox.vy += gravity;
+		activeBox.y += activeBox.vy;
+
+		if (activeBox.y + activeBox.radius > canvas.height) {
+			activeBox.y = canvas.height - activeBox.radius;
+			activeBox = createBox();
+		}
+
+		boxes.forEach(drawBox);
+	}());
+
+}
+</script>
+</body>
+</html>

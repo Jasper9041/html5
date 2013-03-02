@@ -76,29 +76,43 @@
      */
 
     Sprite.prototype.hitTest = function (rectA, rectB, type) {
-        var collides = { hit: false, where: null },
-            tA = false, tB = false, tC = false, tD = false, tE = false;
+        var collides = { 
+            hit: false, 
+            where: {
+                above: 0,
+                below: 0,
+                left: 0,
+                right: 0
+            }
+        },
+        // rectA height
+        rAH = (rectA.y + rectA.height),
+        // rectB height
+        rBH = (rectB.y + rectB.height),
+        // rectA width
+        rAW = (rectA.x + rectA.width),
+        // rectB width
+        rBW = (rectB.x + rectB.width);
+
+        // sprite can collide left, right or above, below
 
 
-        tA = (rectA.x + rectA.width) >= rectB.x;
-        tB = (rectB.x + rectB.width) >= rectA.x; // left
-        tE = (rectB.x + rectB.width) <= rectA.x; // right
-        tC = (rectA.y + rectA.height) <= rectB.y;
-        tD = (rectB.y + rectB.height) <= rectA.y;
-
-        if (tA && tB && !tC && tD) {
-            //console.log("rectA collides below rectB");
-            collides.where = "below";
-        } else if (tA && tB && !tE && !tC && !tD) {
-            //console.log("rectA collides right of rectB");
-            collides.where = "right";
-        } else if (tA && tB && tE && !tC && !tD) {
-            //console.log("rectA collides left of rectB");
-            collides.where = "left";
-        } else if (tA && tB && tC && !tD) {
-            //console.log("rectA collides above rectB");
-            collides.where = "above";
+        // for above to be true
+        if (rAH <= rectB.y) { 
+            collides.where.right = 1;
+        // left works good
+        } else if (rBH <= rectA.y) {
+            collides.where.left = 1;
         }
+
+        // above / below (working as expected)
+        if (rAH > rBH) {
+            collides.where.above = 1;
+        } else if (rAH < rBH) {
+            collides.where.below = 1;
+        }
+
+        // try adding fuzzy distance metric to see which top,bottom,left,right hits
 
         collides.hit = !(rectA.x + rectA.width <= rectB.x ||
            rectB.x + rectB.width < rectA.x ||

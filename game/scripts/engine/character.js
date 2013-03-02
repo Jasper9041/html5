@@ -7,7 +7,7 @@
 	var Character = function (params) {
 		console.log(params.collidesWith);
 		var self = this;
-		self.speed = 2;
+		self.speed = 5;
 		self.direction = 0;
 		// character needs collisions list
 		Sprite.call(this, params);

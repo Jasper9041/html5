@@ -60,13 +60,73 @@
         }
     };
 
+    /**
+     * Returns the boundries of the rectangle for this Sprite
+     *
+     * @method getBounds
+     */
     Sprite.prototype.getBounds = function () {
         var bounds = {};
-        bounds.x = this.x - this.width / 2;
-        bounds.y = this.y + this.height / 2;
-        bounds.width = this.width;
-        bounds.height = this.height;
+        bounds.midpoint = [this.x + this.width/2, this.y + this.height/2];
+        bounds.top = [[this.x,this.y],[bounds.midpoint[0], this.y],[this.x + this.width, this.y]]
+        bounds.mid = [[this.x, bounds.midpoint[1]],[bounds.midpoint[0], bounds.midpoint[1]],[this.x + this.width, bounds.midpoint[1]]];
+        bounds.bottom = [[this.x, this.y + this.height],[bounds.midpoint[0], this.y + this.height],[this.x + this.width, this.y + this.height]];
         return bounds;
+    };
+
+    /** 
+     * Experimental - Performance Wise this will have to be optimized
+     *
+     * @method hitTestNinePoint
+     */
+    Sprite.prototype.hitTestNinePoint = function (rectA, rectB) {
+        var boundsA = rectA.getBounds(),
+            boundsB = rectB.getBounds(),
+            hitTop = false,
+            hitMid = false,
+            hitBottom = false,
+            isLeft = false,
+            isRight = false,
+            i = 0,
+            l = 3;
+
+        console.log("9 point bounds of rectA");
+        console.log(boundsA);
+        console.log("9 point bounds of rectB");
+        console.log(boundsB);
+
+        // for boundsA.top, boundsB.top is a < b for all
+        /*for (; i < l; i++) {
+            console.log("rectA.top["+i+"]: " + boundsA.top[i]);
+            console.log("rectB.top["+i+"]: " + boundsB.top[i]);
+            console.log("rectA.mid["+i+"]: " + boundsA.mid[i]);
+            console.log("rectB.mid["+i+"]: " + boundsB.mid[i]);
+            console.log("rectA.bottom["+i+"]: " + boundsA.bottom[i]);
+            console.log("rectB.bottom["+i+"]: " + boundsB.bottom[i]);
+        }
+        */
+
+        // test hit left
+        function hitIsRight() {
+            var isRight = false,
+                cPoints = [false,false,false];
+            // test a.top[2] vs b.top[0]
+            if (a.top[2][0] > b.top[0][0]) {
+                cPoints[0] = true;
+            }
+            if (a.mid[2][0] > b.mid[0][0]) {
+                cPoints[1] = true;
+            }
+            if (a.bottom[2[0]] > b.bottom[0][0]) {
+                cPoints[2] = true;
+            }
+
+        }
+
+        function hitIsLeft(){}
+        function hitIsTop(){}
+        function hitIsBottom(){}
+        
     };
 
     /**

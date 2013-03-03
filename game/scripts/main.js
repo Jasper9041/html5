@@ -3,7 +3,9 @@ var Engine = {},
     game, 
     hero, 
     plant, 
-    plant2, 
+    plant2,
+    plant3,
+    plant4,
     tiles;
 
 require(['engine/display_list','engine/game','engine/sprite','engine/character', 'engine/tile_map'], function () {
@@ -38,13 +40,39 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         boundsColor: "red",
         image: 'images/sprites/environment/grasses/grasses.gif'
     });
-
     plant2.sx = 32;
     plant2.scaleX = 1;
     plant2.scaleY = 1;
 
+    plant3 = new Sprite({
+        x: 160,
+        y: 160,
+        width: 16,
+        height: 16,
+        collidable: true,
+        showBounds: false,
+        boundsColor: "red",
+        image: 'images/sprites/environment/grasses/grasses.gif'
+    });
+    plant3.sx = 64;
+
+    plant4 = new Sprite({
+        x: 280,
+        y: 280,
+        width: 16,
+        height: 16,
+        collidable: true,
+        showBounds: false,
+        boundsColor: "red",
+        image: 'images/sprites/environment/grasses/grasses.gif'
+    });
+    plant4.sx = 0;
+
     game.displayList.add(plant);
     game.displayList.add(plant2);
+    game.displayList.add(plant3);
+    game.displayList.add(plant4);
+
     game.renderBackground();
 
     tiles = new TileMap({

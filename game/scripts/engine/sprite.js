@@ -8,6 +8,7 @@
         NULL = null,
         TRUE = true,
         FALSE = false;
+
     Sprite = function (params) {
         if (!params) { params = {}; }
         this.x = params.x || 0;

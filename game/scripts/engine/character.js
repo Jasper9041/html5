@@ -5,21 +5,24 @@
 
 (function() {
 	var Character = function (params) {
-		console.log(params.collidesWith);
 		var self = this;
-		self.speed = 5;
+		self.speed = params.speed || 6; // factor of 4 since it is divisible by 16 which is the default tile size
 		self.direction = 0;
-		// character needs collisions list
 		Sprite.call(this, params);
 		return self;
 	},
+	NULL = null,
+	TRUE = true,
+	FALSE = false,
 	LEFT = 37,
 	UP = 38,
 	RIGHT = 39,
 	DOWN = 40;
 
+	// inherit from Sprite
 	Character.prototype = Sprite.prototype;
 
+	// Character State Map
 	Character.prototype.state = {
 		current: "idle",
 		default: "idle",
@@ -45,11 +48,17 @@
 		idle: {},
 		attacking: {},
 		dying: {},
+		/* keys are used for keys pressed (up, down, left, right) - via controller, remote socket, etc */
 		keys: {
-			left: 0,
+			left: 0, 
 			right: 0,
 			up: 0,
 			down: 0
+		},
+		/* mutators affect the speed, and direction of the Character */
+		mutators: {
+			speed: NULL,
+			direction: [NULL,NULL,NULL,NULL]
 		}
 	};
 
@@ -81,22 +90,22 @@
 	Character.prototype.handleMovement = function () {
 		// direction (up,right,down,left = 0,1,2,3)
 		if (this.state.keys.up) {
-			this.y -= this.speed;
+			this.y -= (this.state.mutators.direction[0] !== NULL) ? this.state.mutators.direction[0] : this.speed;
 			this.state.walking.offset = this.state.walking.right_offset;
 			this.sy = 100 / 2;
 		}
 		if (this.state.keys.down) {
-			this.y += this.speed;
+			this.y += (this.state.mutators.direction[2] !== NULL) ? this.state.mutators.direction[2] :  this.speed;
 			this.state.walking.offset = this.state.walking.left_offset;
 			this.sy = 100 / 2;
 		}
 		if (this.state.keys.right) {
-			this.x += this.speed;
+			this.x += (this.state.mutators.direction[1] !== NULL) ? this.state.mutators.direction[1] : this.speed;
 			this.sy = 0;
 			this.state.walking.offset = this.state.walking.right_offset;
 		}
 		if (this.state.keys.left) {
-			this.x -= this.speed;
+			this.x -= (this.state.mutators.direction[3] !== NULL) ? this.state.mutators.direction[3] : this.speed;
 			this.sy = 0;
 			this.state.walking.offset = this.state.walking.left_offset;
 		}
@@ -177,6 +186,42 @@
 				console.log("shield"); // sheild
 				break;
 		}
+	};
+
+	Character.prototype.collision = function (e) {
+		this.isColliding = TRUE;
+		/*console.log("Character just collided with an Object in 2D Linear Space");
+		console.log(e);*/
+		if (this.state.keys.up) {
+			this.state.mutators.direction[0] = 0;
+			this.y += 2;
+			//console.log("collision to the top of Character");
+		}
+		if (this.state.keys.right) {
+			this.state.mutators.direction[1] = 0;
+			this.x -= 2;
+			//console.log("collision to the right of Character");
+		}
+		if (this.state.keys.down) {
+			this.state.mutators.direction[2] = 0;
+			this.y -= 2;
+			//console.log("collision below the Character");
+		}
+		if (this.state.keys.left) {
+			this.state.mutators.direction[3] = 0;
+			this.x += 2;
+			//console.log("collision to the left of the Character");
+		}
+	};
+
+	Character.prototype.clearCollisions = function (e) {
+		this.isColliding = FALSE;
+		//console.log("CLEAR COLLISIONS");
+		// unset the directional mutators
+		this.state.mutators.direction[0] = NULL;
+		this.state.mutators.direction[1] = NULL;
+		this.state.mutators.direction[2] = NULL;
+		this.state.mutators.direction[3] = NULL;
 	};
 
 	window.Character = Character;

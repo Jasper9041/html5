@@ -18,10 +18,11 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
     // add some sprites to the render the background, ideally we load one image and share that resource among all copies 
     // of a given type of background element
     plant = new Sprite({
-        x: 0,
-        y: 0,
+        x: 76,
+        y: 60,
         width: 16,
         height: 16,
+        collidable: true,
         image: 'images/sprites/environment/grasses/grasses.gif'
     });
     plant.scaleX = 1;
@@ -33,7 +34,7 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         width: 16,
         height: 16,
         collidable: true,
-        showBounds: true,
+        showBounds: false,
         boundsColor: "red",
         image: 'images/sprites/environment/grasses/grasses.gif'
     });
@@ -67,7 +68,7 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         width: 34,
         x: 0,
         y: 0,
-        showBounds: true,
+        showBounds: false,
         boundsColor: "green",
         collidable: true,
         collidesWith: game.displayList

@@ -3,7 +3,11 @@
 */
 (function () {
     "use strict";
-    var index = 0, Sprite;
+    var index = 0, 
+        Sprite,
+        NULL = null,
+        TRUE = true,
+        FALSE = false;
     Sprite = function (params) {
         if (!params) { params = {}; }
         this.x = params.x || 0;
@@ -12,7 +16,7 @@
         this.collidesWith = params.collidesWith || [];
         this.sx = 0;
         this.sy = 0;
-        this.collidable = params.collidable || false;
+        this.collidable = params.collidable || FALSE;
         this.index = index;
         this.width = params.width || 30;
         this.height = params.height || 30;
@@ -20,8 +24,8 @@
         this.color = params.color || "#000000";
         this.scaleX = 1; // 2 = half
         this.scaleY = 1; // 2 = half
-        this.ready = false;
-        this.showBounds = params.showBounds || false;
+        this.ready = FALSE;
+        this.showBounds = params.showBounds || FALSE;
         this.boundsColor = params.boundsColor || "red";
         this.init();
         index += 1;
@@ -43,8 +47,14 @@
         }
     };
 
+    Sprite.prototype.isColliding = FALSE;
+
     Sprite.prototype.checkCollisions = function () {
-        var i = 0, length, item, collides;
+        var i = 0, 
+            length, 
+            item, 
+            c_info,
+            collisions = FALSE;
 
         length = this.collidesWith.items.length;
         for (; i < length; i++) {
@@ -52,10 +62,17 @@
             
             // my bounds vs collidables
             if (this.index !== item.index && item.collidable) {
-                collides = this.hitTest(this, item);
-                if (collides.hit) {
-                    console.log(collides);
+                c_info = this.hitTest(this, item);
+                if (c_info.hit) {
+                    collisions = TRUE;
+                    this.collision(c_info)
                 }
+            }
+        }
+        if (!collisions) {
+            // if we had collided, clear that state
+            if (this.isColliding) {
+                this.clearCollisions(); 
             }
         }
     };
@@ -74,76 +91,22 @@
         return bounds;
     };
 
-    /** 
-     * Experimental - Performance Wise this will have to be optimized
-     *
-     * @method hitTestNinePoint
-     */
-    Sprite.prototype.hitTestNinePoint = function (rectA, rectB) {
-        var boundsA = rectA.getBounds(),
-            boundsB = rectB.getBounds(),
-            hitTop = false,
-            hitMid = false,
-            hitBottom = false,
-            isLeft = false,
-            isRight = false,
-            i = 0,
-            l = 3;
-
-        console.log("9 point bounds of rectA");
-        console.log(boundsA);
-        console.log("9 point bounds of rectB");
-        console.log(boundsB);
-
-        // for boundsA.top, boundsB.top is a < b for all
-        /*for (; i < l; i++) {
-            console.log("rectA.top["+i+"]: " + boundsA.top[i]);
-            console.log("rectB.top["+i+"]: " + boundsB.top[i]);
-            console.log("rectA.mid["+i+"]: " + boundsA.mid[i]);
-            console.log("rectB.mid["+i+"]: " + boundsB.mid[i]);
-            console.log("rectA.bottom["+i+"]: " + boundsA.bottom[i]);
-            console.log("rectB.bottom["+i+"]: " + boundsB.bottom[i]);
-        }
-        */
-
-        // test hit left
-        function hitIsRight() {
-            var isRight = false,
-                cPoints = [false,false,false];
-            // test a.top[2] vs b.top[0]
-            if (a.top[2][0] > b.top[0][0]) {
-                cPoints[0] = true;
-            }
-            if (a.mid[2][0] > b.mid[0][0]) {
-                cPoints[1] = true;
-            }
-            if (a.bottom[2[0]] > b.bottom[0][0]) {
-                cPoints[2] = true;
-            }
-
-        }
-
-        function hitIsLeft(){}
-        function hitIsTop(){}
-        function hitIsBottom(){}
-        
-    };
-
     /**
      * Hit Test tests to see if the rect bounds of sA collide with sB
      *
      * @method hitTest
      */
 
-    Sprite.prototype.hitTest = function (rectA, rectB, type) {
+    Sprite.prototype.hitTest = function (rectA, rectB) {
         var collides = { 
-            hit: false, 
-            where: {
-                above: 0,
-                below: 0,
-                left: 0,
-                right: 0
-            }
+            hit: false,
+            /**
+             * top, right, bottom, left collision markers
+             * @property where
+             * @type array
+             */
+            where: [0,0,0,0],
+            with: rectB
         },
         // rectA height
         rAH = (rectA.y + rectA.height),
@@ -155,31 +118,52 @@
         rBW = (rectB.x + rectB.width);
 
         // sprite can collide left, right or above, below
-
-
-        // for above to be true
-        if (rAH <= rectB.y) { 
-            collides.where.right = 1;
-        // left works good
-        } else if (rBH <= rectA.y) {
-            collides.where.left = 1;
+        // sprite hits above if its y + height is less than rectB y+height
+        if (rAH < rBH) { 
+            collides.where[0] = 1; // above
+        // sprite collides below
+        } else if (rBH <= rAH) {
+            collides.where[2] = 1; // below
         }
 
-        // above / below (working as expected)
-        if (rAH > rBH) {
-            collides.where.above = 1;
-        } else if (rAH < rBH) {
-            collides.where.below = 1;
+        // test for overlap right
+        if (rectA.x >= rBW) {
+            // if rectA upper left x is greater then rectB x+width, then rectA is to the right of b
+            collides.where[1] = 1;
+        // test for overlap left
+        } else if (rectB.x >= rAW) {
+            // if rectB upper left x is greater than the x+width of A, then rectB is right of A (left of B)
+            collides.where[3] = 1;
         }
 
-        // try adding fuzzy distance metric to see which top,bottom,left,right hits
-
+        // main geometric rect has rect algorithm
+        // if the bounds of rectA are not in rectB we don't collide
         collides.hit = !(rectA.x + rectA.width <= rectB.x ||
            rectB.x + rectB.width < rectA.x ||
            rectA.y + rectA.height <= rectB.y ||
            rectB.y + rectB.height < rectA.y);
 
         return collides;
+    };
+
+    /**
+     * When a Sprite is hit, this is the base method to handle collisions
+     * Override
+     *
+     * @method collision
+     * @type abstract_method
+     */
+    Sprite.prototype.collision = function (e) {
+        this.isColliding = TRUE;
+    };
+
+    /**
+     * If there are no collisions, then we remove that state from the Sprite
+     *
+     * @method clearCollisions
+     */
+    Sprite.prototype.clearCollisions = function () {
+        this.isColliding = FALSE;
     };
 
     Sprite.prototype.scale = function (scaleX, scaleY) {

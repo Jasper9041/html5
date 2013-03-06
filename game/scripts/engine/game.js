@@ -11,6 +11,9 @@
             width: config.width || 600,
             height: config.height || 400
         };
+
+        // devicePixelRatio
+        self.devicePixelRatio = window.devicePixelRatio || 1;
         
         // canvas engine
         self.ui = {
@@ -19,7 +22,8 @@
             buffer: null,
             buffer_context: null,
             background: null,
-            background_context: null
+            background_context: null,
+            upscale: false
         };
 
         // world context, origin point, etc
@@ -41,7 +45,10 @@
         listener_map: {},
         observers: [], // array of elements listening for actions
         observer_map: {},
-        tiles: {}
+        tiles: {},
+        /* is this high DPI canvas, or regular */
+        backing_store_ratio: null,
+        canvas_ratio: 0
     };
 
     /**
@@ -113,7 +120,9 @@
 
     Game.prototype.init = function () {
         var main = document.getElementById("body"),
-            wrapper = document.createElement('div');
+            wrapper = document.createElement('div'),
+            nw = null,
+            nh = null;
         
         wrapper.classList.add("fluid");
     
@@ -121,25 +130,67 @@
         this.ui.canvas.classList.add("game");
         this.ui.canvas.width = this.config.width;
         this.ui.canvas.height = this.config.height;
+        this.ui.canvas.style.width = this.config.width + "px";
+        this.ui.canvas.style.height = this.config.height + "px";
         this.ui.context = this.ui.canvas.getContext('2d');
+
+        /* cache the backingStore ratio */
+        function getBackingStoreRatio (context) {
+            return context.webkitBackingStorePixelRatio || 
+            context.mozBackingStorePixelRatio ||
+            context.msBackingStorePixelRatio ||
+            context.oBackingStorePixelRatio ||
+            context.backingStorePixelRatio || 1;
+        }
+        this.backing_store_ratio = getBackingStoreRatio(this.ui.context);
+        // used to render correctly on retina (high DPI canvas)
+        this.canvas_ratio = this.devicePixelRatio / this.backing_store_ratio;
     
         this.ui.buffer = document.createElement("canvas");
         this.ui.buffer.classList.add("hidden");
         this.ui.buffer.width = this.config.width;
         this.ui.buffer.height = this.config.height;
+        /*this.ui.buffer.style.width = this.config.width + "px";
+        this.ui.buffer.style.height = this.config.height + "px";*/
         this.ui.buffer_context = this.ui.buffer.getContext('2d');
 
         this.ui.background = document.createElement("canvas");
         this.ui.background.classList.add("hidden");
         this.ui.background.width = this.config.width;
         this.ui.background.height = this.config.height;
+        /*this.ui.background.style.width = this.config.width + "px";
+        this.ui.background.style.height = this.config.height + "px";*/
         this.ui.background_context = this.ui.background.getContext('2d');
+
+        // upscale for retina
+        if (this.ui.upscale) {
+            nw = this.ui.canvas.width * this.canvas_ratio;
+            nh = this.ui.canvas.height * this.canvas_ratio;
+
+            this.ui.canvas.width = nw;
+            this.ui.canvas.height = nh;
+            this.ui.buffer.width = nw;
+            this.ui.buffer.height = nh;
+            this.ui.background.width = nw;
+            this.ui.background.height = nh;
+
+            // scale the context to counter the fact that we've manually scaled
+            // our canvas element
+            this.ui.context.scale(this.canvas_ratio, this.canvas_ratio);
+            this.ui.buffer_context.scale(this.canvas_ratio, this.canvas_ratio);
+            this.ui.background_context.scale(this.canvas_ratio, this.canvas_ratio);
+        }
         
         wrapper.appendChild(this.ui.canvas);
         wrapper.appendChild(this.ui.buffer);
         wrapper.appendChild(this.ui.background);
         main.appendChild(wrapper);
     
+    };
+
+    /* make building new canvas elements easier */
+    Game.prototype.buildCanvas = function () {
+
     };
 
     /*
@@ -200,8 +251,10 @@
         */
         this.renderLayer(this.displayList, this.ui.buffer, this.ui.buffer_context);
         this.ui.context.clearRect(0,0,this.ui.canvas.width, this.ui.canvas.height);
+        // can scale for highDPI here
         this.ui.context.drawImage(this.ui.background, 0, 0);
         this.ui.context.save();
+
         this.ui.context.drawImage(this.ui.buffer, 0, 0);
         this.ui.context.restore();
     };

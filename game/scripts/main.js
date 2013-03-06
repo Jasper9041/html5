@@ -21,7 +21,7 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
     // of a given type of background element
     plant = new Sprite({
         x: 76,
-        y: 60,
+        y: 200,
         width: 16,
         height: 16,
         collidable: true,
@@ -36,7 +36,7 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         width: 16,
         height: 16,
         collidable: true,
-        showBounds: false,
+        showBounds: true,
         boundsColor: "red",
         image: 'images/sprites/environment/grasses/grasses.gif'
     });
@@ -45,8 +45,8 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
     plant2.scaleY = 1;
 
     plant3 = new Sprite({
-        x: 160,
-        y: 160,
+        x: 320,
+        y: 320,
         width: 16,
         height: 16,
         collidable: true,
@@ -61,7 +61,7 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         y: 280,
         width: 16,
         height: 16,
-        collidable: true,
+        collidable: false,
         showBounds: false,
         boundsColor: "red",
         image: 'images/sprites/environment/grasses/grasses.gif'
@@ -96,11 +96,18 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         width: 34,
         x: 0,
         y: 0,
-        showBounds: false,
+        showBounds: true,
         boundsColor: "green",
         collidable: true,
         collidesWith: game.displayList
     });
+    hero.hitRect = {
+        enabled: true,
+        xOffset: 3,
+        yOffset: 7,
+        width: -7,
+        height: -15
+    }
     hero.scaleY = 1;
     hero.scaleX = 1;
 

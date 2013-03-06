@@ -33,6 +33,7 @@
 			delay: 1,
 			left_offset: 0,
 			right_offset: 636 / 2,
+			/* cache states */
 			map: {
 				0: 0, // offset x for sprite sheet
 				1: 72 / 2,
@@ -120,7 +121,7 @@
 			this.sx = 0;
 		}
 		if (this.state.keys.up) {
-			this.sy = 100;
+			this.sy = 100 / 2;
 			this.sx = this.state.walking.right_offset;
 		}
 		this.state.current = this.state.default;

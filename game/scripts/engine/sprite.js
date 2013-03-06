@@ -28,6 +28,16 @@
         this.ready = FALSE;
         this.showBounds = params.showBounds || FALSE;
         this.boundsColor = params.boundsColor || "red";
+        
+        /* hit bounds */
+        this.hitRect = {
+            enabled: FALSE,
+            xOffset: 0,
+            yOffset: 0,
+            width: 0,
+            height: 0
+        };
+
         this.init();
         index += 1;
         return this;
@@ -41,6 +51,9 @@
             image.onload = function () {
                 self.image = image;
                 self.ready = true;
+                // if we don't pass an image width and height...
+                //image.naturalWidth
+                //image.naturalHeight
                 if (cb) {
                     cb.apply(null, [image]);
                 }
@@ -82,6 +95,7 @@
      * Returns the boundries of the rectangle for this Sprite
      *
      * @method getBounds
+     * @todo Add bounds for collision rect if requested
      */
     Sprite.prototype.getBounds = function () {
         var bounds = {};
@@ -91,12 +105,6 @@
         bounds.bottom = [[this.x, this.y + this.height],[bounds.midpoint[0], this.y + this.height],[this.x + this.width, this.y + this.height]];
         return bounds;
     };
-
-    /**
-     * Hit Test tests to see if the rect bounds of sA collide with sB
-     *
-     * @method hitTest
-     */
 
     Sprite.prototype.hitTest = function (rectA, rectB) {
         var collides = { 
@@ -109,14 +117,28 @@
             where: [0,0,0,0],
             with: rectB
         },
+        rAX = rectA.x + rectA.hitRect.xOffset,
+        rAY = rectA.y + rectA.hitRect.yOffset,
+        rBX = rectB.x + rectB.hitRect.xOffset,
+        rBY = rectB.y + rectB.hitRect.yOffset,
         // rectA height
-        rAH = (rectA.y + rectA.height),
+        rAH = (rAY + rectA.height),
         // rectB height
         rBH = (rectB.y + rectB.height),
         // rectA width
         rAW = (rectA.x + rectA.width),
         // rectB width
         rBW = (rectB.x + rectB.width);
+
+        if (rectA.hitRect.enabled) {
+            rAW = rAX + (rectA.width + rectA.hitRect.width);
+            rAH = rAY + (rectA.height + rectA.hitRect.height);
+        }
+
+        if (rectB.hitRect.enabled) {
+            rBW = rBX + (rectB.width + rectB.hitRect.width);
+            rBH = rBY + (rectB.height + rectB.hitRect.height);
+        }
 
         // sprite can collide left, right or above, below
         // sprite hits above if its y + height is less than rectB y+height
@@ -128,7 +150,7 @@
         }
 
         // test for overlap right
-        if (rectA.x >= rBW) {
+        if (rAX >= rBW) {
             // if rectA upper left x is greater then rectB x+width, then rectA is to the right of b
             collides.where[1] = 1;
         // test for overlap left
@@ -139,9 +161,9 @@
 
         // main geometric rect has rect algorithm
         // if the bounds of rectA are not in rectB we don't collide
-        collides.hit = !(rectA.x + rectA.width <= rectB.x ||
-           rectB.x + rectB.width < rectA.x ||
-           rectA.y + rectA.height <= rectB.y ||
+        collides.hit = !(rAW <= rectB.x ||
+           rectB.x + rectB.width < rAX ||
+           rAH <= rectB.y ||
            rectB.y + rectB.height < rectA.y);
 
         return collides;
@@ -177,9 +199,10 @@
             context.save();
             /*context.translate(this.x, this.y);
             context.rotate(this.rotation);
-            context.scale(this.scaleX, this.scaleY);*/
+            */
+            //context.scale(this.scaleX, this.scaleY);
             context.drawImage(
-                this.image, 
+                this.image,
                 this.sx,
                 this.sy, 
                 this.width, 
@@ -191,7 +214,7 @@
             );
             if (this.showBounds) {
                 context.beginPath();
-                context.rect(this.x, this.y, this.width, this.height);
+                context.rect(this.x+this.hitRect.xOffset, this.y+this.hitRect.yOffset, this.width+this.hitRect.width, this.height+this.hitRect.height);
                 context.lineWidth = 1;
                 context.strokeStyle = this.boundsColor;
                 context.stroke();

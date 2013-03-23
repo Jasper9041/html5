@@ -195,22 +195,21 @@
 		console.log(e);*/
 		if (this.state.keys.up) {
 			this.state.mutators.direction[0] = 0;
-			this.y += 2;
-			//console.log("collision to the top of Character");
+			this.y += 10;
 		}
 		if (this.state.keys.right) {
 			this.state.mutators.direction[1] = 0;
-			this.x -= 2;
+			this.x -= 10;
 			//console.log("collision to the right of Character");
 		}
 		if (this.state.keys.down) {
 			this.state.mutators.direction[2] = 0;
-			this.y -= 2;
+			this.y -= 10;
 			//console.log("collision below the Character");
 		}
 		if (this.state.keys.left) {
 			this.state.mutators.direction[3] = 0;
-			this.x += 2;
+			this.x += 10;
 			//console.log("collision to the left of the Character");
 		}
 	};

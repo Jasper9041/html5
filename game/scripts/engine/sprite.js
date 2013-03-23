@@ -13,24 +13,24 @@
         if (!params) { params = {}; }
         this.x = params.x || 0;
         this.y = params.y || 0;
-        this.rotation = 0;
+        this.rotation = params.rotation || 0;
         this.collidesWith = params.collidesWith || [];
-        this.sx = 0;
-        this.sy = 0;
+        this.sx = params.sx || 0;
+        this.sy = params.sy || 0;
         this.collidable = params.collidable || FALSE;
-        this.index = index;
+        this.index = index; // don't mess with this since it handles the internal sprite stacking context (use swapDepths instead)
         this.width = params.width || 30;
         this.height = params.height || 30;
         this.image = params.image || null;
         this.color = params.color || "#000000";
-        this.scaleX = 1; // 2 = half
-        this.scaleY = 1; // 2 = half
+        this.scaleX = params.scaleX || 1; // 2 = half
+        this.scaleY = params.scaleY || 1; // 2 = half
         this.ready = FALSE;
         this.showBounds = params.showBounds || FALSE;
         this.boundsColor = params.boundsColor || "red";
         
         /* hit bounds */
-        this.hitRect = {
+        this.hitRect = params.hitRect || {
             enabled: FALSE,
             xOffset: 0,
             yOffset: 0,
@@ -161,10 +161,14 @@
 
         // main geometric rect has rect algorithm
         // if the bounds of rectA are not in rectB we don't collide
-        collides.hit = !(rAW <= rectB.x ||
+        /*collides.hit = !(rAW <= rectB.x ||
            rectB.x + rectB.width < rAX ||
            rAH <= rectB.y ||
-           rectB.y + rectB.height < rectA.y);
+           rectB.y + rectB.height < rectA.y);*/
+        collides.hit = !(rAW <= rectB.x ||
+            rBW < rAX ||
+            rAH <= rBY ||
+            rBH < rAY);
 
         return collides;
     };

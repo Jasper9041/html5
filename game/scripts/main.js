@@ -1,25 +1,37 @@
 /* main.js */
-var Engine = {},
-    game, 
-    hero, 
-    plant, 
-    plant2,
-    plant3,
-    plant4,
-    tiles;
+var Engine = {
+    Area: {
+        current: "testArea",
+        top: null,
+        left: null,
+        bottom: null,
+        right: null
+    },
+    TileMaps: {},
+    Level: {},
+    Viewport: {}
+}, game, hero, treeHit, treeHit2, treeHit3, treeHit4, treeHit5, treeHit6, background;
 
-require(['engine/display_list','engine/game','engine/sprite','engine/character', 'engine/tile_map'], function () {
+require(['config/areas/test_area','engine/tiled_map','engine/display_list','engine/game','engine/sprite','engine/character'], function () {
     
 
-    game = new Game();
+    game = new Game({
+        width: 320,
+        height: 320
+    });
     game.init(); // create canvas, get contexts
 
     game.addListener(document, "keydown");
     game.addListener(document, "keyup");
 
+    // test loading in a comprehensive tile map as background context
+
+    background = new TiledMap(Engine.TileMaps[Engine.Area.current], game.ui.background_context);
+    background.preload();
+
     // add some sprites to the render the background, ideally we load one image and share that resource among all copies 
     // of a given type of background element
-    plant = new Sprite({
+    /*plant = new Sprite({
         x: 76,
         y: 200,
         width: 16,
@@ -29,64 +41,49 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
     });
     plant.scaleX = 1;
     plant.scaleY = 1;
-
-    plant2 = new Sprite({
-        x: 60,
-        y: 60,
-        width: 16,
-        height: 16,
-        collidable: true,
-        showBounds: true,
-        boundsColor: "red",
-        image: 'images/sprites/environment/grasses/grasses.gif'
-    });
-    plant2.sx = 32;
-    plant2.scaleX = 1;
-    plant2.scaleY = 1;
-
-    plant3 = new Sprite({
-        x: 320,
-        y: 320,
+    */
+    treeHit = new Sprite({
+        x: 21,
+        y: 51,
         width: 16,
         height: 16,
         collidable: true,
         showBounds: false,
         boundsColor: "red",
-        image: 'images/sprites/environment/grasses/grasses.gif'
+        image: 'images/sprites/misc/clear.gif',
+        hitRect: {
+            enabled: true,
+            height: 40,
+            width: 40,
+            xOffset: 0,
+            yOffset: 0
+        },
+        sx: 32
     });
-    plant3.sx = 64;
 
-    plant4 = new Sprite({
-        x: 280,
-        y: 280,
+    treeHit2 = new Sprite({
+        x: 163,
+        y: 44,
         width: 16,
         height: 16,
-        collidable: false,
+        collidable: true,
         showBounds: false,
-        boundsColor: "red",
-        image: 'images/sprites/environment/grasses/grasses.gif'
+        boundsColor: "green",
+        image: 'images/sprites/misc/clear.gif',
+        hitRect: {
+            enabled: true,
+            height: 30,
+            width: 100,
+            xOffset: 0,
+            yOffset: 0
+        },
+        sx: 32
     });
-    plant4.sx = 0;
 
-    game.displayList.add(plant);
-    game.displayList.add(plant2);
-    game.displayList.add(plant3);
-    game.displayList.add(plant4);
+    game.displayList.add(treeHit);
+    game.displayList.add(treeHit2);
 
     game.renderBackground();
-
-    tiles = new TileMap({
-        image: 'images/sprites/environment/grasses/grasses.gif'
-    });
-    
-    tiles.preload();
-    tiles.map = [
-    {x:0, y:0, width: 16, height: 16, offsetX: 0, offsetY: 0},
-    {x:8, y:0, width: 16, height: 16, offsetX: 0, offsetY: 0},
-    {x:16, y:0, width: 16, height: 16, offsetX: 0, offsetY: 0},
-    {x:0, y:8, width: 16, height: 16, offsetX: 16, offsetY: 0},
-    {x:0, y:16, width: 16, height: 16, offsetX: 16, offsetY: 0},
-    {x:8, y:8, width: 16, height: 16, offsetX: 32, offsetY: 0}];
 
     //hero = new Character();
     // generate a character (link)
@@ -96,8 +93,8 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         width: 34,
         x: 0,
         y: 0,
-        showBounds: true,
-        boundsColor: "green",
+        /*showBounds: true,
+        boundsColor: "green",*/
         collidable: true,
         collidesWith: game.displayList
     });
@@ -106,7 +103,7 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
         xOffset: 3,
         yOffset: 7,
         width: -7,
-        height: -15
+        height: -10
     }
     hero.scaleY = 1;
     hero.scaleX = 1;
@@ -116,6 +113,12 @@ require(['engine/display_list','engine/game','engine/sprite','engine/character',
     
     // displayList is the foreground
     game.displayList.add(hero);
+
+    // note: if you want link to be able to run behind an object, it can't be in the background layer
+    // in general it is better for performance if you paint the background seldomly, and only update the main canvas
+    // you have 3 canvas's to composite if you want (game.ui.canvas, game.ui.buffer, game.ui.background)
+    // buffer will probably be renamed to something else since compositing is working nicely without the need for a real double buffer
+
     game.render();
 
 });

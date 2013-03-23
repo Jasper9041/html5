@@ -8,7 +8,7 @@
         
         // viewport
         self.config = {
-            width: config.width || 600,
+            width: config.width || 608,
             height: config.height || 400
         };
 
@@ -27,12 +27,12 @@
         };
 
         // world context, origin point, etc
-        self.map = {
+        /*self.map = {
             type: "world",
             origin: [0,0],
             bounds: null, // bounds are origin point, width x height rectangle at tile size offset
             tile_size: config.tile_size || [16,16] // sets up a 16x16 tile size for viewport
-        };
+        };*/
 
         // autorender the canvas
         self.autorender = config.autorender || true;

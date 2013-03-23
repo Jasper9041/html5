@@ -90,8 +90,6 @@ TiledMap.prototype.imageLoadComplete = function (name) {
  * @note: can override this with next step in the process if you like. eg. TiledMap.parseConfig().preload(); -> then render
  */
 TiledMap.prototype.imagesLoaded = function () {
-	console.log("images loaded, next step render layer");
-
 	var i, length, 
 		layers = this.config.layers,
 		tileset = this.config.tilesets;
@@ -106,7 +104,7 @@ TiledMap.prototype.imagesLoaded = function () {
 TiledMap.prototype.renderLayer = function (layer, tile) {
     // benchmark
     //console.time("render_" + tile.name);
-    // basic rendering of sprites to canvas running about 0.234ms for sprite (w=192, h=80)
+    // basic rendering of sprites to canvas running about 0.234ms for sprite (w=192, h=80) - note: a 4x5 grid tree takes 0.0655ms to render
     // basic rendering of sprites to canvas running about 1.8ms for sprite (w=208, h=16) painting all tiles on 320x320 canvas
     var i, length, 
         w = layer.width, 

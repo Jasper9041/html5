@@ -189,6 +189,11 @@
 		}
 	};
 
+	Character.prototype.handleRemoteController = function (e) {
+		console.log("Character Class is handling remote control");
+		console.log(e);
+	};
+
 	Character.prototype.collision = function (e) {
 		this.isColliding = TRUE;
 		/*console.log("Character just collided with an Object in 2D Linear Space");

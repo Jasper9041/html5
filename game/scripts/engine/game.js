@@ -6,6 +6,8 @@
         self.background = new DisplayList();
         self.displayList = new DisplayList();
         
+        self.controllers = config.controllers || null;
+
         // viewport
         self.config = {
             width: config.width || 608,
@@ -37,6 +39,10 @@
         // autorender the canvas
         self.autorender = config.autorender || true;
 
+        if (self.controllers) {
+            self.setupControllers();
+        }
+
         return self;
     };
 
@@ -45,11 +51,67 @@
         listener_map: {},
         observers: [], // array of elements listening for actions
         observer_map: {},
+        remotes: {},
         tiles: {},
         /* is this high DPI canvas, or regular */
         backing_store_ratio: null,
         canvas_ratio: 0
     };
+
+    /**
+     * Setup Remote Custom Events (gamepad API, websockets, etc)
+     *
+     * @method setupControllers
+     */
+    Game.prototype.setupControllers = function (controllers) {
+        // check controllers param
+        if (!controllers) {
+            controllers = this.controllers;
+            if (!controllers) {
+                throw new Error("Controllers being setup in setupControllers should exist.... ");
+            }
+
+        }
+        var i, 
+            length = controllers.length;
+
+        for (i=0; i < length; i++) {
+            this.setupController(controllers[i]);
+        }
+
+    };
+
+    /**
+     * Ensure the individual controller can be setup
+     * validate it has the following properties 'type', 'constructor', 'method'
+     *
+     * @method setupController
+     */
+    Game.prototype.setupController = function (controller) {
+        var valid = false;
+
+        if (!controller.hasOwnProperty("type") || !controller.hasOwnProperty("context") || !controller.hasOwnProperty("method")) {
+            throw new Error("Controller is missing gamepad, constructor, or method");
+        }
+
+        if (!this.remotes.hasOwnProperty(controller.type)) {
+            this.remotes[controller.type] = controller.context;
+            // trigger the first method method
+            this.remotes[controller.type][controller.method].apply(controller.context, []);
+            this.observer_map[controller.type] = [];
+        }
+
+    };
+
+    /**
+     * Add support for Remote Controlled Events (controller API, websockets)
+     * Really just a proxy event
+     *
+     * @method handleRemote
+     */
+    Game.prototype.handleRemote = function (event) {
+        this.handleEvent(event);
+    }
 
     /**
      * Catch all event handler

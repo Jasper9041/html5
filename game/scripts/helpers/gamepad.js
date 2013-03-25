@@ -60,6 +60,8 @@ GamePad.prototype = {
             length = this.observers.length,
             observer;
 
+        params.type = type;
+
         for (i=0; i < length; i++) {
             observer = this.observers[i];
             if (observer.hasOwnProperty("method")) {
@@ -67,9 +69,6 @@ GamePad.prototype = {
                 this.observers[i].method.apply(null, [params]);
             }
         }
-
-        console.log(type);
-        console.log(params);
     },
     /**
      * get the browser gamepad API handle
@@ -142,10 +141,11 @@ GamePad.prototype = {
 
         var gamepad_controller;
         
-        if (!this.gamepads.hasOwnProperty[controller.id]) {
+        if (!this.gamepads.hasOwnProperty(controller.id)) {
             this.gamepads[controller.id] = {
                 controller: controller,
-                activeButtons: {}
+                activeButtons: {},
+                active: false
             }
         }
 
@@ -169,9 +169,16 @@ GamePad.prototype = {
                     } 
                 }
             }
+            if (changed) {
+                gamepad_controller.active = true;
+            } else if (gamepad_controller.active) {
+                gamepad_controller.active = false;
+                changed = true;
+            }
 
             return changed;
         }
+
         // check the buttons for pressed states
         if (checkButtons()) {
             this.controllerEvent("buttonsPressed", gamepad_controller);

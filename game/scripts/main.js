@@ -12,17 +12,33 @@ var Engine = {
     Viewport: {}
 }, game, hero, treeHit, treeHit2, treeHit3, treeHit4, treeHit5, treeHit6, background;
 
-require(['config/areas/test_area','engine/tiled_map','engine/display_list','engine/game','engine/sprite','engine/character'], function () {
+require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/display_list','engine/game','engine/sprite','engine/character'], function () {
     
-
     game = new Game({
         width: 320,
-        height: 320
+        height: 320,
+        controllers: [{
+            type: "gamepad",
+            context: new Utils.GamePad(),
+            method: "init"
+        }]
     });
     game.init(); // create canvas, get contexts
 
+    // need to be able to plugin gamepad api if available
+    // need to make game listen to controllers as well
     game.addListener(document, "keydown");
     game.addListener(document, "keyup");
+
+    // if we have a gamepad attached
+    if (game.remotes.gamepad && game.remotes.gamepad.supported) {
+        // bind the game's handleRemote method to the gamepad observer
+        game.remotes.gamepad.registerObserver({
+            id: "engine",
+            type: "buttonPressed",
+            method: game.handleRemote.bind(game)
+        });
+    }
 
     // test loading in a comprehensive tile map as background context
 
@@ -96,20 +112,22 @@ require(['config/areas/test_area','engine/tiled_map','engine/display_list','engi
         /*showBounds: true,
         boundsColor: "green",*/
         collidable: true,
-        collidesWith: game.displayList
+        collidesWith: game.displayList,
+        hitRect: {
+            enabled: true,
+            xOffset: 3,
+            yOffset: 7,
+            width: -7,
+            height: -10
+        },
+        scaleY: 1,
+        scaleX: 1
     });
-    hero.hitRect = {
-        enabled: true,
-        xOffset: 3,
-        yOffset: 7,
-        width: -7,
-        height: -10
-    }
-    hero.scaleY = 1;
-    hero.scaleX = 1;
 
     game.addObserver(hero, "keydown", "handleKeypress");
     game.addObserver(hero, "keyup", "handleComplete");
+
+    game.addObserver(hero, "buttonsPressed", "handleRemoteController");
     
     // displayList is the foreground
     game.displayList.add(hero);

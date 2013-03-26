@@ -190,8 +190,8 @@
 	};
 
 	Character.prototype.handleRemoteController = function (e) {
-		console.log("Character Class is handling remote control");
-		console.log(e);
+		//console.log("Character Class is handling remote control");
+		//console.log(e);
 	};
 
 	Character.prototype.collision = function (e) {

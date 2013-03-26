@@ -17,8 +17,20 @@
     Hero.prototype = Entity.prototype;
 
     Hero.prototype.handleRemoteController = function (e) {
-        console.log("handling Hero's controller");
-        console.log(e);
+        //console.log("handling Hero's controller");
+
+        if (e.activeButtons['13']) {
+            this.y += this.speed;
+        }
+        if (e.activeButtons['15']) {
+            this.x += this.speed;
+        }
+        if (e.activeButtons['14']) {
+            this.x -= this.speed;
+        }
+        if (e.activeButtons['12']) {
+            this.y -= this.speed;
+        }
     };
 
     Hero.prototype.collision = function (e) {

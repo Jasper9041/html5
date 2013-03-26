@@ -10,9 +10,9 @@ var Engine = {
     TileMaps: {},
     Level: {},
     Viewport: {}
-}, game, hero, treeHit, treeHit2, treeHit3, treeHit4, treeHit5, treeHit6, background;
+}, game, hero, hero_test, treeHit, treeHit2, treeHit3, treeHit4, treeHit5, treeHit6, background;
 
-require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/display_list','engine/game','engine/sprite','engine/character'], function () {
+require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/display_list','engine/game','engine/sprite','engine/entity', 'engine/character', 'characters/hero'], function () {
     
     game = new Game({
         width: 320,
@@ -124,13 +124,36 @@ require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/d
         scaleX: 1
     });
 
+    hero_test = new Hero({
+        image: 'images/sprites/link/link_run_all_sm.png',
+        height: 50,
+        width: 34,
+        x: 60,
+        y: 60,
+        /*showBounds: true,
+        boundsColor: "green",*/
+        collidable: true,
+        collidesWith: game.displayList,
+        hitRect: {
+            enabled: true,
+            xOffset: 3,
+            yOffset: 7,
+            width: -7,
+            height: -10
+        },
+        scaleY: 1,
+        scaleX: 1
+    });
+
     game.addObserver(hero, "keydown", "handleKeypress");
     game.addObserver(hero, "keyup", "handleComplete");
 
     game.addObserver(hero, "buttonsPressed", "handleRemoteController");
+    game.addObserver(hero_test, "buttonsPressed", "handleRemoteController");
     
     // displayList is the foreground
     game.displayList.add(hero);
+    game.displayList.add(hero_test);
 
     // note: if you want link to be able to run behind an object, it can't be in the background layer
     // in general it is better for performance if you paint the background seldomly, and only update the main canvas

@@ -79,7 +79,11 @@
                 c_info = this.hitTest(this, item);
                 if (c_info.hit) {
                     collisions = TRUE;
-                    this.collision(c_info)
+                    this.collision(c_info);
+                    item.collision.apply(item, [{
+                        hit: true,
+                        with: this
+                    }]);
                 }
             }
         }
@@ -109,12 +113,6 @@
     Sprite.prototype.hitTest = function (rectA, rectB) {
         var collides = { 
             hit: false,
-            /**
-             * top, right, bottom, left collision markers
-             * @property where
-             * @type array
-             */
-            where: [0,0,0,0],
             with: rectB
         },
         rAX = rectA.x + rectA.hitRect.xOffset,
@@ -140,31 +138,9 @@
             rBH = rBY + (rectB.height + rectB.hitRect.height);
         }
 
-        // sprite can collide left, right or above, below
-        // sprite hits above if its y + height is less than rectB y+height
-        if (rAH < rBH) { 
-            collides.where[0] = 1; // above
-        // sprite collides below
-        } else if (rBH <= rAH) {
-            collides.where[2] = 1; // below
-        }
-
-        // test for overlap right
-        if (rAX >= rBW) {
-            // if rectA upper left x is greater then rectB x+width, then rectA is to the right of b
-            collides.where[1] = 1;
-        // test for overlap left
-        } else if (rectB.x >= rAW) {
-            // if rectB upper left x is greater than the x+width of A, then rectB is right of A (left of B)
-            collides.where[3] = 1;
-        }
-
         // main geometric rect has rect algorithm
         // if the bounds of rectA are not in rectB we don't collide
-        /*collides.hit = !(rAW <= rectB.x ||
-           rectB.x + rectB.width < rAX ||
-           rAH <= rectB.y ||
-           rectB.y + rectB.height < rectA.y);*/
+
         collides.hit = !(rAW <= rectB.x ||
             rBW < rAX ||
             rAH <= rBY ||

@@ -20,7 +20,7 @@
 	DOWN = 40;
 
 	// inherit from Sprite
-	Character.prototype = Sprite.prototype;
+	Character.prototype = new Sprite();
 
 	// Character State Map
 	Character.prototype.state = {

@@ -10,7 +10,7 @@ var Engine = {
     TileMaps: {},
     Level: {},
     Viewport: {}
-}, game, hero, hero_test, treeHit, treeHit2, treeHit3, treeHit4, treeHit5, treeHit6, background;
+}, game, hero, treeHit, treeHit2, background;
 
 require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/display_list','engine/game','engine/sprite','engine/entity', 'engine/character', 'characters/hero'], function () {
     
@@ -45,19 +45,7 @@ require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/d
     background = new TiledMap(Engine.TileMaps[Engine.Area.current], game.ui.background_context);
     background.preload();
 
-    // add some sprites to the render the background, ideally we load one image and share that resource among all copies 
-    // of a given type of background element
-    /*plant = new Sprite({
-        x: 76,
-        y: 200,
-        width: 16,
-        height: 16,
-        collidable: true,
-        image: 'images/sprites/environment/grasses/grasses.gif'
-    });
-    plant.scaleX = 1;
-    plant.scaleY = 1;
-    */
+    
     treeHit = new Sprite({
         x: 21,
         y: 51,
@@ -78,6 +66,7 @@ require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/d
     });
 
     treeHit2 = new Sprite({
+        type: "enemy",
         x: 163,
         y: 44,
         width: 16,
@@ -101,37 +90,15 @@ require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/d
 
     game.renderBackground();
 
-    //hero = new Character();
-    // generate a character (link)
-    hero = new Character({
-        image: 'images/sprites/link/link_run_all_sm.png',
+    hero = new Hero({
+        type: "hero",
+        image: 'images/sprites/link/walking_all.png',
         height: 50,
         width: 34,
-        x: 0,
-        y: 0,
-        /*showBounds: true,
-        boundsColor: "green",*/
-        collidable: true,
-        collidesWith: game.displayList,
-        hitRect: {
-            enabled: true,
-            xOffset: 3,
-            yOffset: 7,
-            width: -7,
-            height: -10
-        },
-        scaleY: 1,
-        scaleX: 1
-    });
-
-    hero_test = new Hero({
-        image: 'images/sprites/link/link_run_all_sm.png',
-        height: 50,
-        width: 34,
-        x: 60,
+        x: 100,
         y: 60,
-        /*showBounds: true,
-        boundsColor: "green",*/
+        showBounds: false,
+        boundsColor: "red",
         collidable: true,
         collidesWith: game.displayList,
         hitRect: {
@@ -146,14 +113,11 @@ require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/d
     });
 
     game.addObserver(hero, "keydown", "handleKeypress");
-    game.addObserver(hero, "keyup", "handleComplete");
-
+    game.addObserver(hero, "keyup", "handleKeyUp");
     game.addObserver(hero, "buttonsPressed", "handleRemoteController");
-    game.addObserver(hero_test, "buttonsPressed", "handleRemoteController");
     
     // displayList is the foreground
     game.displayList.add(hero);
-    game.displayList.add(hero_test);
 
     // note: if you want link to be able to run behind an object, it can't be in the background layer
     // in general it is better for performance if you paint the background seldomly, and only update the main canvas

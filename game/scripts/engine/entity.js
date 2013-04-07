@@ -18,22 +18,81 @@
     // should be capable of having many states
     Entity.prototype.state = {
         current: "",
-        states: {}
+        heading: {n:0,e:0,s:0,w:0}
     };
 
     // entity should be able to be affected by its surrounding
     // eg: entity is in water, in mud (slow), on ice slick = fast, blocked at wall
     Entity.prototype.mutators = {
         speed: NULL,
-        orientation: NULL
+        direction: [0,0,0,0]
+    };
+
+    Entity.prototype.clearMovement = function () {
+        this.state.heading.n = 0;
+        this.state.heading.e = 0;
+        this.state.heading.s = 0;
+        this.state.heading.w = 0;
     };
 
     /**
      * Entity should be able to be controlled via 3rd party - eg. websocket, usb controller, via SimpleAI
      *
      * @method handleRemoteController
+     * @type Dynamic
      */
     Entity.prototype.handleRemoteController = function (e) {
+    };
+
+    /**
+     * Entity should be able to be controlled via keyboard input
+     * @method handleKeypress
+     * @dynamic
+     */
+    Entity.prototype.handleKeypress = function (e) {
+        var code = e.keyCode.toString();
+        // e.keyCode is the keyCode for the keyboard
+        // 39 is right
+        // 40 is down
+        // 37 is left
+        // 38 is up
+        switch (code) {
+        case "39":
+            this.state.heading.e = 1;
+            break;
+        case "40":
+            this.state.heading.s = 1;
+            break;
+        case "37":
+            this.state.heading.w = 1;
+            break;
+        case "38":
+            this.state.heading.n = 1;
+            break;
+        }
+    };
+
+    /**
+     * Unset the direction of movement when the key is deactivated
+     * @method handleKeyUp
+     * @dynamic
+     */
+    Entity.prototype.handleKeyUp = function (e) {
+        var code = e.keyCode.toString();
+        switch (code) {
+        case "39":
+            this.state.heading.e = 0;
+            break;
+        case "40":
+            this.state.heading.s = 0;
+            break;
+        case "37":
+            this.state.heading.w = 0;
+            break;
+        case "38":
+            this.state.heading.n = 0;
+            break;
+        }
     };
 
     /**
@@ -60,6 +119,9 @@
      * @method clearCollisions
      */
     Entity.prototype.clearCollisions = function (e) {
+        this.isColliding = FALSE;
+        // unset the directional mutators
+        this.mutators.direction = [0,0,0,0];
     };
 
     window.Entity = Entity;

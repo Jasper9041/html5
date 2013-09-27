@@ -126,7 +126,7 @@ require(['helpers/gamepad','config/areas/test_area','engine/tiled_map','engine/d
 
     hero_test = new Hero({
         image: 'images/sprites/link/link_run_all_sm.png',
-        height: 50,
+        height: 90,
         width: 34,
         x: 60,
         y: 60,

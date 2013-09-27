@@ -13,6 +13,8 @@
         if (!params) { params = {}; }
         this.x = params.x || 0;
         this.y = params.y || 0;
+        // use this.type to tag a sprite as a specific type of entity / (eg: type: "enemy")
+        this.type = params.type || "sprite";
         this.rotation = params.rotation || 0;
         this.collidesWith = params.collidesWith || [];
         this.sx = params.sx || 0;
@@ -82,7 +84,8 @@
                     this.collision(c_info);
                     item.collision.apply(item, [{
                         hit: true,
-                        with: this
+                        against: this,
+                        info: c_info.bInfo
                     }]);
                 }
             }
@@ -113,7 +116,15 @@
     Sprite.prototype.hitTest = function (rectA, rectB) {
         var collides = { 
             hit: false,
-            with: rectB
+            against: rectB,
+            /*
+             aInfo[0] = above
+             aInfo[1] = right
+             aInfo[2] = below
+             aInfo[3] = left
+            */ 
+            aInfo: [0,0,0,0],
+            bInfo: [0,0,0,0]
         },
         rAX = rectA.x + rectA.hitRect.xOffset,
         rAY = rectA.y + rectA.hitRect.yOffset,
@@ -136,6 +147,21 @@
         if (rectB.hitRect.enabled) {
             rBW = rBX + (rectB.width + rectB.hitRect.width);
             rBH = rBY + (rectB.height + rectB.hitRect.height);
+        }
+
+        if (rAX > rBX) {
+            collides.aInfo[3] = 1;
+            collides.bInfo[1] = 1;
+        } else {
+            collides.aInfo[1] = 1;
+            collides.bInfo[3] = 1;
+        }
+        if (rAY > rBY) {
+            collides.aInfo[2] = 1;
+            collides.bInfo[0] = 1;
+        } else {
+            collides.aInfo[0] = 1;
+            collides.bInfo[2] = 1;
         }
 
         // main geometric rect has rect algorithm
@@ -180,11 +206,11 @@
             /*context.translate(this.x, this.y);
             context.rotate(this.rotation);
             */
-            //context.scale(this.scaleX, this.scaleY);
+            context.scale(this.scaleX, this.scaleY);
             context.drawImage(
                 this.image,
                 this.sx,
-                this.sy, 
+                this.sy,
                 this.width, 
                 this.height, 
                 this.x, 
